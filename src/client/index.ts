@@ -363,6 +363,10 @@ export function apply(ctx: ClientContext): void {
 					top: "12px",
 					right: "12px",
 					zIndex: 2147483000,
+					// Frameless desktop shells drag the window from the top strip
+					// (-webkit-app-region: drag); the panel must opt back out or
+					// its header/close clicks are swallowed as window drags.
+					WebkitAppRegion: "no-drag",
 					minWidth: "300px",
 					maxWidth: "360px",
 					padding: "14px 16px",
