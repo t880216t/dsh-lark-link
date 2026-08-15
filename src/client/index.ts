@@ -396,12 +396,22 @@ export function apply(ctx: ClientContext): void {
 					{
 						type: "button",
 						onClick: () => setOpen(false),
+						// A bare glyph gives a hit target of only a few pixels; a
+						// fixed 28px box makes the control reliably clickable.
 						style: {
+							display: "inline-flex",
+							alignItems: "center",
+							justifyContent: "center",
+							width: "28px",
+							height: "28px",
+							margin: "-6px -8px -6px 0",
+							padding: 0,
 							background: "transparent",
 							border: "none",
+							borderRadius: "6px",
 							color: "#9aa0a6",
 							cursor: "pointer",
-							fontSize: "16px",
+							fontSize: "18px",
 							lineHeight: 1,
 						},
 						title: "关闭",
