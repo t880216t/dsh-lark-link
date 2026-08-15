@@ -122,8 +122,12 @@ const STATE_VIEW: Record<
 };
 
 export function apply(ctx: ClientContext): void {
-	const SidebarAction = (): unknown => {
+	const SidebarAction = (props?: unknown): unknown => {
+		// The sidebar footer slot passes { wide }: true in the expanded column,
+		// false on the collapsed icon rail.
+		const wide = (props as { wide?: boolean } | undefined)?.wide !== false;
 		const [open, setOpen] = useState<boolean>(false);
+		const [hovered, setHovered] = useState<boolean>(false);
 		const [st, setSt] = useState<StatusPayload | undefined>(undefined);
 		const [qrTs, setQrTs] = useState<number>(0);
 		const [qrLoaded, setQrLoaded] = useState<boolean>(false);
@@ -153,28 +157,88 @@ export function apply(ctx: ClientContext): void {
 		const origin = win.location?.origin ?? "";
 		const showQr = state === "setup";
 
+		// A 16px feather line icon keeps the Lark hint inside the sidebar's
+		// stroke-icon language (no emoji glyph mismatch across platforms).
+		const icon = h(
+			"svg",
+			{
+				"aria-hidden": true,
+				width: 16,
+				height: 16,
+				viewBox: "0 0 24 24",
+				fill: "none",
+				stroke: "currentColor",
+				strokeWidth: 2,
+				strokeLinecap: "round",
+				strokeLinejoin: "round",
+				style: { flex: "none" },
+			},
+			h("path", { d: "M20.24 12.24a6 6 0 0 0-8.49-8.49L5 10.5V19h8.5z" }),
+			h("path", { d: "M16 8 2 22" }),
+			h("path", { d: "M17.5 15H9" }),
+		);
+
+		// Match the sidebar foot rhythm (Settings trigger): a 34px compact row
+		// bleeding into the inline padding when wide, the 36x36 circle on the
+		// rail; hover/open feedback uses the shared interactive token.
 		const button = h(
 			"button",
 			{
 				type: "button",
 				title: "Lark Link",
 				onClick: () => setOpen((v) => !v),
+				onMouseEnter: () => setHovered(true),
+				onMouseLeave: () => setHovered(false),
 				style: {
-					display: "inline-flex",
+					display: "flex",
 					alignItems: "center",
-					gap: "6px",
-					padding: "6px 10px",
-					border: "1px solid rgba(127,127,127,.25)",
-					borderRadius: "8px",
-					background: open ? "rgba(127,127,127,.18)" : "transparent",
-					color: "inherit",
+					boxSizing: "border-box",
+					border: "none",
 					cursor: "pointer",
-					fontSize: "13px",
-					lineHeight: 1,
+					overflow: "hidden",
+					fontFamily: "inherit",
+					color: "var(--dsw-alias-label-primary)",
+					background:
+						open || hovered
+							? "var(--dsw-alias-interactive-bg-hover)"
+							: "transparent",
+					...(wide
+						? {
+								flex: "1 0 100%",
+								gap: "8px",
+								width: "calc(100% + 8px)",
+								height: "34px",
+								margin: "0 -4px",
+								padding: "6px 2px 6px 10px",
+								borderRadius: "12px",
+								fontSize: "14px",
+								lineHeight: "22px",
+							}
+						: {
+								flex: "none",
+								justifyContent: "center",
+								width: "36px",
+								height: "36px",
+								margin: 0,
+								padding: 0,
+								borderRadius: "50%",
+							}),
 				},
 			},
-			"🪶",
-			"Lark",
+			icon,
+			wide
+				? h(
+						"span",
+						{
+							style: {
+								overflow: "hidden",
+								textOverflow: "ellipsis",
+								whiteSpace: "nowrap",
+							},
+						},
+						"Lark",
+					)
+				: null,
 		);
 
 		if (!open) return button;
